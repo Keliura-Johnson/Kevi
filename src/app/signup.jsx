@@ -1,8 +1,16 @@
-// import Ionicons from '@expo/vector-icons/Ionicons';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router } from "expo-router";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 import { useState } from "react";
-import { Image, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+    ActivityIndicator,
+    Image, KeyboardAvoidingView, Platform,
+    ScrollView, Text, TextInput, TouchableOpacity, View
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { auth, db } from '../firebaseConfig';
 export default function signup (){
     const [email, setEmail] = useState('');
     const [fullname, setFullname] = useState('');
@@ -10,10 +18,67 @@ export default function signup (){
     const [password, setPassword] = useState('');
     const [confirm, setConfirm] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [alertMessage, setAlertMessage] = useState('');
+    const [checkbox, setCheckbox] = useState(false);
+const [loading, setLoading] = useState(false);
+
+
+
+                const handleSignup = async () => {
+                const hasNumber = /\d/.test(password);
+
+                if (password.length < 8 || !hasNumber) {
+                    alert("Password must be at least 8 characters and contain a number");
+                    return;
+                }
+
+                if (password !== confirm) {
+                    alert("Passwords do not match");
+                    return;
+                }
+
+                setLoading(true);
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    const user = userCredential.user;
+
+                    await setDoc(doc(db, "users", user.uid), {
+                    fullname: fullname,
+                    phone: phone,
+                    email: email,
+                    });
+
+                    console.log("User created:", user.uid);
+                    router.push('/preference');
+                } catch (error) {
+                     let friendlyMessage = "Something went wrong. Please try again.";
+                    
+                    if (error.code === 'auth/email-already-in-use') {
+                            friendlyMessage = "An account with this email already exists.";
+                        } else if (error.code === 'auth/invalid-email') {
+                            friendlyMessage = "Please enter a valid email address.";
+                        } else if (error.code === 'auth/weak-password') {
+                            friendlyMessage = "Password is too weak.";
+                        }
+                    setAlertMessage(friendlyMessage); 
+                    alertMessage(true);
+                    }
+                    finally {
+                    setLoading(false);
+                }
+                };
     return (
         <SafeAreaView style={{flex:1,backgroundColor:'#0A0415', }}>
-            
-            <View style={{flexDirection:'row',justifyContent:'center',paddingVertical:'15%'}}>
+            <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+              <ScrollView
+                 showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ flexGrow: 1, }}
+                keyboardShouldPersistTaps="handled"
+                >
+            <View style={{flexDirection:'row',justifyContent:'center', opacity: loading ? 0.4 : 1,paddingVertical:'15%'}}>
                 <Image style={{width:55,height:55,borderRadius:10,borderWidth:1}}  source={require('@/assets/images/kevilogo.png')} >
 
                 </Image>
@@ -31,7 +96,7 @@ export default function signup (){
                 placeholderTextColor='#3B324A'
                 onChangeText={(text) => setFullname(text)}
                 style={{ borderWidth: 1, borderColor: '#191227',backgroundColor:'#160C26',
-                     borderRadius: 12,height:48,
+                     borderRadius: 12,height:48,borderColor:'#412A6F',color:'#ffffff'
                   }}
                 />
                 <Text style={{color:'#8B859B',fontSize:15}}>Email Address</Text>
@@ -40,7 +105,7 @@ export default function signup (){
                 placeholderTextColor='#3B324A'
                 onChangeText={(text) => setEmail(text)}
                 style={{ borderWidth: 1, borderColor: '#191227',backgroundColor:'#160C26',
-                     borderRadius: 12,height:48,
+                     borderRadius: 12,height:48,borderColor:'#412A6F',color:'#ffffff'
                   }}
                 />
                 <Text style={{color:'#8B859B',fontSize:15}}>Phone Number</Text>
@@ -49,42 +114,83 @@ export default function signup (){
                 placeholderTextColor='#3B324A'
                 onChangeText={(text) => setPhone(text)}
                 style={{ borderWidth: 1, borderColor: '#191227',backgroundColor:'#160C26',
-                     borderRadius: 12,height:48,
+                     borderRadius: 12,height:48,borderColor:'#412A6F',color:'#ffffff'
                   }}
                 />
                 <Text style={{color:'#8B859B',fontSize:15}}>Password</Text>
-               {/* <View style={{ flexDirection: 'row',
-                alignItems: 'center', borderWidth: 1,
-                 }}> */}
+                <View    style={{ borderWidth: 1, borderColor: '#191227',backgroundColor:'#160C26',
+                     borderRadius: 12,height:48,borderColor:'#412A6F',flexDirection:'row',
+                  }}>
                <TextInput
-               
+               style={{width:'90%',color:'#ffffff'}}
                 placeholder="Password"
                 placeholderTextColor='#3B324A'
                 secureTextEntry={!showPassword}
                 onChangeText={(text) => setPassword(text)}
-                style={{ borderWidth: 1, borderColor: '#191227',backgroundColor:'#160C26',
-                     borderRadius: 12,height:48,
-                  }}
+             
             />
+              
+        
+              <TouchableOpacity style={{alignSelf:'center'}} onPress={() => setShowPassword(!showPassword)}>
+                <Ionicons name={showPassword ? 'eye' : 'eye-off'} size={20} color='#412A6F' />
+            </TouchableOpacity>
+            
+            </View>
+       
+            
             <Text style={{color:'#8B859B',fontSize:15}}> Confirm Password</Text>
+             <View    style={{ borderWidth: 1, borderColor: '#191227',backgroundColor:'#160C26',
+                     borderRadius: 12,height:48,borderColor:'#412A6F',flexDirection:'row',
+                  }}>
              <TextInput
-               
+                style={{width:'90%',color:'#ffffff'}}
                 placeholder=" Confirm Password"
                 placeholderTextColor='#3B324A'
                 secureTextEntry={!showPassword}
                 onChangeText={(text) => setConfirm(text)}
-                style={{ borderWidth: 1, borderColor: '#191227',backgroundColor:'#160C26',
-                     borderRadius: 12,height:48,
-                  }}
+              
             />
-            {/* <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                <Ionicons name={showPassword ? 'eye' : 'eye-off'} size={20} color='#9B9B9B' />
+                <TouchableOpacity style={{alignSelf:'center'}} onPress={() => setShowPassword(!showPassword)}>
+                <Ionicons name={showPassword ? 'eye' : 'eye-off'} size={20} color='#412A6F' />
             </TouchableOpacity>
-            </View> */}
-        <TouchableOpacity style={{alignSelf:'center',backgroundColor:'#7F56D9',fontSize:14,width:'98%',
-                   height:48,borderRadius:15,marginTop:20}} onPress={() => {
-                    router.push('/preference')
-                   }}  >
+            
+            </View>
+          
+        <View style={{flexDirection:'row',gap:3,marginTop:8}}>
+                <TouchableOpacity style={{alignSelf:'center'}} onPress={() => setCheckbox(!checkbox)}>
+                <MaterialIcons name={checkbox ? 'check-box' : 'check-box-outline-blank'  } 
+                size={20} color='#412A6F' />
+            </TouchableOpacity>
+         
+
+
+
+        <Text>
+        <Text style={{ color: '#8B859B' }}>I agree to the </Text>
+        <Text
+            style={{ color: '#412A6F' }}
+            onPress={() => router.push('/home')}
+        >
+            Terms of Service{' '}
+        </Text>
+        <Text style={{ color: '#8B859B' }}>& </Text>
+        <Text
+            style={{ color: '#412A6F' }}
+            onPress={() => router.push('/privacypolicy')}
+        >
+            Privacy Policy
+        </Text>
+        </Text>
+        </View>
+        <TouchableOpacity 
+          disabled={!checkbox}
+        
+        style={{alignSelf:'center',fontSize:14,width:'98%',
+               backgroundColor: checkbox ? '#7F56D9' : '#9164f4',
+               opacity: checkbox ? 1 : 0.5,
+                   height:48,borderRadius:15,marginTop:15}} onPress={
+                    handleSignup
+                   }  >
                     <Text style={{marginTop:13,textAlign:'center',
                       color:'#FFFFFF'}}>Create Account</Text>
         
@@ -107,7 +213,24 @@ export default function signup (){
 
 
             </View>
-        
+            </ScrollView>
+            </KeyboardAvoidingView>
+            {loading && (
+                    <View
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
+                    >
+                    <ActivityIndicator size="large" color="#412A6F" />
+                    </View>
+                )}
+
         </SafeAreaView>
 
 
