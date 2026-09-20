@@ -49,9 +49,9 @@ const [loading, setLoading] = useState(false);
                     });
 
                     console.log("User created:", user.uid);
-                    router.push('/preference');
-                } catch (error) {
-                     let friendlyMessage = "Something went wrong. Please try again.";
+                    router.replace('/preference');
+               } catch (error) {
+                    let friendlyMessage = "Something went wrong. Please try again.";
                     
                     if (error.code === 'auth/email-already-in-use') {
                             friendlyMessage = "An account with this email already exists.";
@@ -60,12 +60,8 @@ const [loading, setLoading] = useState(false);
                         } else if (error.code === 'auth/weak-password') {
                             friendlyMessage = "Password is too weak.";
                         }
-                    setAlertMessage(friendlyMessage); 
-                    alertMessage(true);
+                    alert(friendlyMessage);
                     }
-                    finally {
-                    setLoading(false);
-                }
                 };
     return (
         <SafeAreaView style={{flex:1,backgroundColor:'#0A0415', }}>
@@ -92,7 +88,7 @@ const [loading, setLoading] = useState(false);
             <View style={{flex:1,flexDirection:'column',margin:'5%',gap:8}}>
                 <Text style={{color:'#8B859B',fontSize:15}}>Full Name</Text>
                 <TextInput
-                placeholder="Alex Pavier"
+                placeholder=" Alex Pavier"
                 placeholderTextColor='#3B324A'
                 onChangeText={(text) => setFullname(text)}
                 style={{ borderWidth: 1, borderColor: '#191227',backgroundColor:'#160C26',
@@ -101,7 +97,7 @@ const [loading, setLoading] = useState(false);
                 />
                 <Text style={{color:'#8B859B',fontSize:15}}>Email Address</Text>
                 <TextInput
-                placeholder="alexpavier123@gmail.com"
+                placeholder=" alexpavier123@gmail.com"
                 placeholderTextColor='#3B324A'
                 onChangeText={(text) => setEmail(text)}
                 style={{ borderWidth: 1, borderColor: '#191227',backgroundColor:'#160C26',
@@ -110,7 +106,7 @@ const [loading, setLoading] = useState(false);
                 />
                 <Text style={{color:'#8B859B',fontSize:15}}>Phone Number</Text>
                 <TextInput
-                placeholder="08.......63"
+                placeholder=" 08.......63"
                 placeholderTextColor='#3B324A'
                 onChangeText={(text) => setPhone(text)}
                 style={{ borderWidth: 1, borderColor: '#191227',backgroundColor:'#160C26',
@@ -123,7 +119,7 @@ const [loading, setLoading] = useState(false);
                   }}>
                <TextInput
                style={{width:'90%',color:'#ffffff'}}
-                placeholder="Password"
+                placeholder=" Password"
                 placeholderTextColor='#3B324A'
                 secureTextEntry={!showPassword}
                 onChangeText={(text) => setPassword(text)}
@@ -169,14 +165,14 @@ const [loading, setLoading] = useState(false);
         <Text style={{ color: '#8B859B' }}>I agree to the </Text>
         <Text
             style={{ color: '#412A6F' }}
-            onPress={() => router.push('/home')}
+            onPress={() => router.replace('/privacypolicy')}
         >
             Terms of Service{' '}
         </Text>
         <Text style={{ color: '#8B859B' }}>& </Text>
         <Text
             style={{ color: '#412A6F' }}
-            onPress={() => router.push('/privacypolicy')}
+            onPress={() => router.replace('/privacypolicy')}
         >
             Privacy Policy
         </Text>

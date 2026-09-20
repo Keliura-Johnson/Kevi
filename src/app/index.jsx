@@ -1,58 +1,79 @@
 import { router } from "expo-router";
-import { ImageBackground, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { onAuthStateChanged } from "firebase/auth";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { auth } from "../firebaseConfig";
+
 export default function Index() {
-  return (
+    const [checkingAuth, setCheckingAuth] = useState(true);
 
-    <SafeAreaView style={styles.container}>
-      <ImageBackground source={require('@/assets/images/onboarding1.png')} 
-      style={{width:"100%", height:360,marginTop:"20%"}}>
-        <TouchableOpacity style={{marginLeft:"85%"}} onPress={() => {
-            router.push('/signup')
-           }}>
-      <Text style={{color:'#8B859B',fontSize:16}}>Skip</Text>
-      </TouchableOpacity>
-      </ImageBackground>
-     
-      <Text style={{color:'#FFFFFF',textAlign:'center',
-        paddingHorizontal:'10',fontSize:25,marginTop:20}}>
-        Discover Movies You'll Love
-      </Text>
-        <Text style={{color:'#8B859B',marginTop:10,fontSize:14,
-           paddingHorizontal:'10',textAlign:'center'}} >
-        {  'Kevi parses thousands of cinematic masterpiece \nto match your exact mood, aesthetic preferences,\nand taste profile.'}
-      </Text>
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                router.replace('/home');
+            } else {
+                setCheckingAuth(false);
+            }
+        });
 
-      <View style={{marginTop:105,flexDirection:'row',justifyContent:'center',gap:10}}>
-        <View style={{width:24,height:8,backgroundColor:'#7F56D9',borderRadius:4 }}>
+        return unsubscribe;
+    }, []);
 
-        </View>
-        <View style={{width:8,height:8,backgroundColor:'#473E56',borderRadius:4 }}>
-        </View>
-        <View style={{width:8,height:8,backgroundColor:'#473E56',borderRadius:4 }}>
-        </View>
-    </View>
-    <TouchableOpacity style={{alignSelf:'center',backgroundColor:'#7F56D9',fontSize:14,width:"85%",
-           height:48,paddingHorizontal:'10',borderRadius:15,marginTop:20}} onPress={() => {
-            router.push('/onboarding2')
-           }}  >
-            <Text style={{marginTop:13,textAlign:'center',
-              color:'#FFFFFF'}}>Next</Text>
+    if (checkingAuth) {
+        return (
+            <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <ActivityIndicator size="large" color="#7F56D9" />
+            </SafeAreaView>
+        );
+    }
 
-    </TouchableOpacity>
-      
+    return (
+        <SafeAreaView style={styles.container}>
+            <ImageBackground source={require('@/assets/images/onboarding1.png')}
+                style={{ width: "100%", height: 360, marginTop: "20%" }}>
+                <TouchableOpacity style={{ marginLeft: "85%" }} onPress={() => {
+                    router.replace('/signup')
+                }}>
+                    <Text style={{ color: '#8B859B', fontSize: 16 }}>Skip</Text>
+                </TouchableOpacity>
+            </ImageBackground>
 
-      
-     </SafeAreaView>
- 
-  );
+            <Text style={{
+                color: '#FFFFFF', textAlign: 'center',
+                paddingHorizontal: '10', fontSize: 25, marginTop: 20
+            }}>
+                Discover Movies You'll Love
+            </Text>
+            <Text style={{
+                color: '#8B859B', marginTop: 10, fontSize: 14,
+                paddingHorizontal: '10', textAlign: 'center'
+            }} >
+                {'Kevi parses thousands of cinematic masterpiece \nto match your exact mood, aesthetic preferences,\nand taste profile.'}
+            </Text>
+
+            <View style={{ marginTop: 105, flexDirection: 'row', justifyContent: 'center', gap: 10 }}>
+                <View style={{ width: 24, height: 8, backgroundColor: '#7F56D9', borderRadius: 4 }} />
+                <View style={{ width: 8, height: 8, backgroundColor: '#473E56', borderRadius: 4 }} />
+                <View style={{ width: 8, height: 8, backgroundColor: '#473E56', borderRadius: 4 }} />
+            </View>
+
+            <TouchableOpacity style={{
+                alignSelf: 'center', backgroundColor: '#7F56D9', fontSize: 14, width: "85%",
+                height: 48, paddingHorizontal: '10', borderRadius: 15, marginTop: 20
+            }} onPress={() => {
+                router.push('/onboarding2')
+            }}>
+                <Text style={{ marginTop: 13, textAlign: 'center', color: '#FFFFFF' }}>Next</Text>
+            </TouchableOpacity>
+
+        </SafeAreaView>
+    );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  
-    backgroundColor:"#0B0417",
-    
-  },
+    container: {
+        flex: 1,
+        backgroundColor: "#0B0417",
+    },
 });

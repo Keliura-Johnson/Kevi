@@ -20,6 +20,7 @@ const TabsLayout = ()=>{
     }
 
     return(
+        
         <Tabs
             screenOptions={{
                 headerShown: false,
@@ -39,6 +40,25 @@ const TabsLayout = ()=>{
                 tabBarInactiveTintColor: "#9E96B0",
             }}
         >
+            <Tabs.Screen 
+                name="moviedetail" 
+                options={{
+                    href: null,
+                }}
+            />
+
+            <Tabs.Screen 
+                name="castprofile" 
+                options={{
+                    href: null,
+                }}
+            />
+                        <Tabs.Screen 
+                name="editProfile" 
+                options={{
+                    href: null,
+                }}
+            />
              <Tabs.Screen name="home" 
             
             options={{

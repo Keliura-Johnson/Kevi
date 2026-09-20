@@ -32,7 +32,7 @@ export default function signin (){
         await signInWithEmailAndPassword(auth, email, password);
 
         console.log("Login successful");
-        router.push('/home');
+        router.replace('/home');
 
     } catch (error) {
         let friendlyMessage = "Something went wrong. Please try again.";
@@ -80,7 +80,7 @@ export default function signin (){
                 
                 <Text style={{color:'#8B859B',fontSize:15}}>Email Address</Text>
                 <TextInput
-                placeholder="alexpavier123@gmail.com"
+                placeholder=" alexpavier123@gmail.com"
                 placeholderTextColor='#3B324A'
                 onChangeText={(text) => setEmail(text)}
                 style={{ borderWidth: 1, borderColor: '#191227',backgroundColor:'#160C26',
@@ -94,7 +94,7 @@ export default function signin (){
                   }}>
                <TextInput
                 style={{width:'90%',color:'#ffffff'}}
-                placeholder="Password"
+                placeholder=" Password"
                 placeholderTextColor='#3B324A'
                 secureTextEntry={!showPassword}
                 onChangeText={(text) => setPassword(text)}
@@ -166,7 +166,7 @@ export default function signin (){
            Don't have an account?
             </Text>
             <TouchableOpacity  onPress={()=> {
-                router.push('/signup,')
+                router.push('/signup')
             }}  >
              <Text style={{ fontSize: 16, color: '#704cc0',}}>
           Sign Up
