@@ -13,9 +13,12 @@ import {
     ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme } from "../context/ThemeContext";
 import { auth, db } from "../firebaseConfig";
 
 export default function AccountSettings() {
+    const { colors } = useTheme();
+
     const [fullname, setFullname] = useState("");
     const [email, setEmail] = useState("");
     const [profilePic, setProfilePic] = useState("");
@@ -116,7 +119,7 @@ export default function AccountSettings() {
             setNewEmail("");
             setEmailPassword("");
             showAlert("Check Your Inbox", "A confirmation link has been sent to your new email address. Your email will update once you click it.");
-                    } catch (error) {
+        } catch (error) {
             showAlert("Error", mapAuthError(error, "CHANGE EMAIL"));
         } finally {
             setSaving(false);
@@ -180,50 +183,53 @@ export default function AccountSettings() {
 
     if (loading) {
         return (
-            <SafeAreaView style={styles.container}>
-                <ActivityIndicator size="large" color="#7F56D9" style={{ marginTop: 60 }} />
+            <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+                <ActivityIndicator size="large" color={colors.accent || "#7F56D9"} style={{ marginTop: 60 }} />
             </SafeAreaView>
         );
     }
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()}>
-                    <Ionicons name="arrow-back" size={22} color="#FFFFFF" />
+                    <Ionicons name="arrow-back" size={22} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Account</Text>
+                <Text style={[styles.headerTitle, { color: colors.text }]}>Account</Text>
                 <View style={{ width: 22 }} />
             </View>
 
             <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 40 }}>
 
-                <View style={styles.profileCard}>
+                <View style={[styles.profileCard, { backgroundColor: colors.card }]}>
                     <Image
                         source={profilePic ? { uri: profilePic } : require("../../assets/images/avatar.png")}
                         style={styles.profileImage}
                     />
                     <View>
-                        <Text style={styles.profileName}>{fullname}</Text>
-                        <Text style={styles.profileMember}>Member since {memberSince}</Text>
+                        <Text style={[styles.profileName, { color: colors.text }]}>{fullname}</Text>
+                        <Text style={[styles.profileMember, { color: colors.subtext }]}>Member since {memberSince}</Text>
                     </View>
                 </View>
 
-                <Text style={styles.sectionLabel}>EMAIL ADDRESS</Text>
-                <View style={styles.row}>
-                    <Text style={styles.rowText}>{email}</Text>
+                <Text style={[styles.sectionLabel, { color: colors.subtext }]}>EMAIL ADDRESS</Text>
+                <View style={[styles.row, { backgroundColor: colors.card }]}>
+                    <Text style={[styles.rowText, { color: colors.text }]}>{email}</Text>
                     <TouchableOpacity onPress={() => setShowEmailModal(true)}>
-                        <Text style={styles.changeText}>Change</Text>
+                        <Text style={[styles.changeText, { color: colors.accent || "#7F56D9" }]}>Change</Text>
                     </TouchableOpacity>
                 </View>
 
-                <Text style={styles.sectionLabel}>SECURITY</Text>
-                <View style={styles.card}>
+                <Text style={[styles.sectionLabel, { color: colors.subtext }]}>SECURITY</Text>
+                <View style={[styles.card, { backgroundColor: colors.card }]}>
                     <View style={styles.passwordRow}>
-                        <Text style={styles.rowText}>Password</Text>
+                        <Text style={[styles.rowText, { color: colors.text }]}>Password</Text>
                     </View>
-                    <TouchableOpacity style={styles.changePasswordButton} onPress={() => setShowPasswordModal(true)}>
-                        <Text style={styles.changePasswordText}>Change Password</Text>
+                    <TouchableOpacity 
+                        style={[styles.changePasswordButton, { backgroundColor: colors.border || "#2A1F3D" }]} 
+                        onPress={() => setShowPasswordModal(true)}
+                    >
+                        <Text style={[styles.changePasswordText, { color: colors.text }]}>Change Password</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -239,139 +245,143 @@ export default function AccountSettings() {
 
             </ScrollView>
 
+            {/* Email Modal */}
             <Modal visible={showEmailModal} transparent animationType="fade" onRequestClose={() => setShowEmailModal(false)}>
                 <View style={styles.modalOverlay}>
-                    <View style={styles.modalBox}>
-                        <Text style={styles.modalTitle}>Change Email</Text>
+                    <View style={[styles.modalBox, { backgroundColor: colors.card }]}>
+                        <Text style={[styles.modalTitle, { color: colors.text }]}>Change Email</Text>
                         <TextInput
-                            style={styles.input}
+                            style={[styles.input, { backgroundColor: colors.background, borderColor: colors.border, color: colors.text }]}
                             placeholder="New email address"
-                            placeholderTextColor="#6E667D"
+                            placeholderTextColor={colors.subtext || "#6E667D"}
                             value={newEmail}
                             onChangeText={setNewEmail}
                             autoCapitalize="none"
                             keyboardType="email-address"
                         />
-                        <View style={styles.passwordInputWrapper}>
+                        <View style={[styles.passwordInputWrapper, { backgroundColor: colors.background, borderColor: colors.border }]}>
                             <TextInput
-                                style={styles.passwordInput}
+                                style={[styles.passwordInput, { color: colors.text }]}
                                 placeholder="Current password"
-                                placeholderTextColor="#6E667D"
+                                placeholderTextColor={colors.subtext || "#6E667D"}
                                 value={emailPassword}
                                 onChangeText={setEmailPassword}
                                 secureTextEntry={!showEmailPass}
                             />
                             <TouchableOpacity onPress={() => setShowEmailPass(!showEmailPass)}>
-                                <Ionicons name={showEmailPass ? "eye" : "eye-off"} size={20} color="#8B859B" />
+                                <Ionicons name={showEmailPass ? "eye" : "eye-off"} size={20} color={colors.subtext} />
                             </TouchableOpacity>
                         </View>
-                        <TouchableOpacity style={styles.modalSaveButton} onPress={handleChangeEmail} disabled={saving}>
+                        <TouchableOpacity style={[styles.modalSaveButton, { backgroundColor: colors.accent || "#7F56D9" }]} onPress={handleChangeEmail} disabled={saving}>
                             {saving ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.modalSaveText}>Update Email</Text>}
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => { setShowEmailModal(false); setNewEmail(""); setEmailPassword(""); }}>
-                            <Text style={styles.modalCancelText}>Cancel</Text>
+                            <Text style={[styles.modalCancelText, { color: colors.subtext }]}>Cancel</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
             </Modal>
 
+            {/* Password Modal */}
             <Modal visible={showPasswordModal} transparent animationType="fade" onRequestClose={() => setShowPasswordModal(false)}>
                 <View style={styles.modalOverlay}>
-                    <View style={styles.modalBox}>
-                        <Text style={styles.modalTitle}>Change Password</Text>
+                    <View style={[styles.modalBox, { backgroundColor: colors.card }]}>
+                        <Text style={[styles.modalTitle, { color: colors.text }]}>Change Password</Text>
 
-                        <View style={styles.passwordInputWrapper}>
+                        <View style={[styles.passwordInputWrapper, { backgroundColor: colors.background, borderColor: colors.border }]}>
                             <TextInput
-                                style={styles.passwordInput}
+                                style={[styles.passwordInput, { color: colors.text }]}
                                 placeholder="Current password"
-                                placeholderTextColor="#6E667D"
+                                placeholderTextColor={colors.subtext || "#6E667D"}
                                 value={currentPassword}
                                 onChangeText={setCurrentPassword}
                                 secureTextEntry={!showCurrentPass}
                             />
                             <TouchableOpacity onPress={() => setShowCurrentPass(!showCurrentPass)}>
-                                <Ionicons name={showCurrentPass ? "eye" : "eye-off"} size={20} color="#8B859B" />
+                                <Ionicons name={showCurrentPass ? "eye" : "eye-off"} size={20} color={colors.subtext} />
                             </TouchableOpacity>
                         </View>
 
-                        <View style={styles.passwordInputWrapper}>
+                        <View style={[styles.passwordInputWrapper, { backgroundColor: colors.background, borderColor: colors.border }]}>
                             <TextInput
-                                style={styles.passwordInput}
+                                style={[styles.passwordInput, { color: colors.text }]}
                                 placeholder="New password"
-                                placeholderTextColor="#6E667D"
+                                placeholderTextColor={colors.subtext || "#6E667D"}
                                 value={newPassword}
                                 onChangeText={setNewPassword}
                                 secureTextEntry={!showNewPass}
                             />
                             <TouchableOpacity onPress={() => setShowNewPass(!showNewPass)}>
-                                <Ionicons name={showNewPass ? "eye" : "eye-off"} size={20} color="#8B859B" />
+                                <Ionicons name={showNewPass ? "eye" : "eye-off"} size={20} color={colors.subtext} />
                             </TouchableOpacity>
                         </View>
 
-                        <View style={styles.passwordInputWrapper}>
+                        <View style={[styles.passwordInputWrapper, { backgroundColor: colors.background, borderColor: colors.border }]}>
                             <TextInput
-                                style={styles.passwordInput}
+                                style={[styles.passwordInput, { color: colors.text }]}
                                 placeholder="Confirm new password"
-                                placeholderTextColor="#6E667D"
+                                placeholderTextColor={colors.subtext || "#6E667D"}
                                 value={confirmPassword}
                                 onChangeText={setConfirmPassword}
                                 secureTextEntry={!showConfirmPass}
                             />
                             <TouchableOpacity onPress={() => setShowConfirmPass(!showConfirmPass)}>
-                                <Ionicons name={showConfirmPass ? "eye" : "eye-off"} size={20} color="#8B859B" />
+                                <Ionicons name={showConfirmPass ? "eye" : "eye-off"} size={20} color={colors.subtext} />
                             </TouchableOpacity>
                         </View>
 
-                        <TouchableOpacity style={styles.modalSaveButton} onPress={handleChangePassword} disabled={saving}>
+                        <TouchableOpacity style={[styles.modalSaveButton, { backgroundColor: colors.accent || "#7F56D9" }]} onPress={handleChangePassword} disabled={saving}>
                             {saving ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.modalSaveText}>Update Password</Text>}
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => {
                             setShowPasswordModal(false);
                             setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
                         }}>
-                            <Text style={styles.modalCancelText}>Cancel</Text>
+                            <Text style={[styles.modalCancelText, { color: colors.subtext }]}>Cancel</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
             </Modal>
 
+            {/* Delete Account Modal */}
             <Modal visible={showDeleteModal} transparent animationType="fade" onRequestClose={() => setShowDeleteModal(false)}>
                 <View style={styles.modalOverlay}>
-                    <View style={styles.modalBox}>
-                        <Text style={styles.modalTitle}>Delete Account</Text>
+                    <View style={[styles.modalBox, { backgroundColor: colors.card }]}>
+                        <Text style={[styles.modalTitle, { color: colors.text }]}>Delete Account</Text>
                         <Text style={styles.dangerText}>
                             This action is permanent and cannot be undone. Enter your password to confirm.
                         </Text>
-                        <View style={styles.passwordInputWrapper}>
+                        <View style={[styles.passwordInputWrapper, { backgroundColor: colors.background, borderColor: colors.border }]}>
                             <TextInput
-                                style={styles.passwordInput}
+                                style={[styles.passwordInput, { color: colors.text }]}
                                 placeholder="Password"
-                                placeholderTextColor="#6E667D"
+                                placeholderTextColor={colors.subtext || "#6E667D"}
                                 value={deletePassword}
                                 onChangeText={setDeletePassword}
                                 secureTextEntry={!showDeletePass}
                             />
                             <TouchableOpacity onPress={() => setShowDeletePass(!showDeletePass)}>
-                                <Ionicons name={showDeletePass ? "eye" : "eye-off"} size={20} color="#8B859B" />
+                                <Ionicons name={showDeletePass ? "eye" : "eye-off"} size={20} color={colors.subtext} />
                             </TouchableOpacity>
                         </View>
                         <TouchableOpacity style={styles.deleteConfirmButton} onPress={handleDeleteAccount} disabled={saving}>
                             {saving ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.modalSaveText}>Delete My Account</Text>}
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => { setShowDeleteModal(false); setDeletePassword(""); }}>
-                            <Text style={styles.modalCancelText}>Cancel</Text>
+                            <Text style={[styles.modalCancelText, { color: colors.subtext }]}>Cancel</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
             </Modal>
 
+            {/* Alert Modal */}
             <Modal visible={alertModal.visible} transparent animationType="fade" onRequestClose={() => setAlertModal({ ...alertModal, visible: false })}>
                 <View style={styles.modalOverlay}>
-                    <View style={styles.alertBox}>
-                        <Text style={styles.modalTitle}>{alertModal.title}</Text>
-                        <Text style={styles.alertMessage}>{alertModal.message}</Text>
+                    <View style={[styles.alertBox, { backgroundColor: colors.card }]}>
+                        <Text style={[styles.modalTitle, { color: colors.text }]}>{alertModal.title}</Text>
+                        <Text style={[styles.alertMessage, { color: colors.subtext }]}>{alertModal.message}</Text>
                         <TouchableOpacity
-                            style={styles.modalSaveButton}
+                            style={[styles.modalSaveButton, { backgroundColor: colors.accent || "#7F56D9" }]}
                             onPress={() => setAlertModal({ ...alertModal, visible: false })}
                         >
                             <Text style={styles.modalSaveText}>OK</Text>
@@ -384,66 +394,66 @@ export default function AccountSettings() {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#090315" },
+    container: { flex: 1 },
     header: {
         flexDirection: "row", justifyContent: "space-between", alignItems: "center",
         paddingHorizontal: 20, paddingVertical: 16,
     },
-    headerTitle: { color: "#FFFFFF", fontSize: 18, fontWeight: "700" },
+    headerTitle: { fontSize: 18, fontFamily: "Outfit_700Bold" },
     profileCard: {
         flexDirection: "row", alignItems: "center", gap: 14,
-        backgroundColor: "#160626", borderRadius: 16, padding: 16, marginTop: 10, marginBottom: 20,
+        borderRadius: 16, padding: 16, marginTop: 10, marginBottom: 20,
     },
     profileImage: { width: 56, height: 56, borderRadius: 28 },
-    profileName: { color: "#FFFFFF", fontSize: 16, fontWeight: "700" },
-    profileMember: { color: "#8B859B", fontSize: 12, marginTop: 2 },
-    sectionLabel: { color: "#8B859B", fontSize: 12, fontWeight: "700", letterSpacing: 1, marginBottom: 8, marginTop: 10 },
+    profileName: { fontSize: 16, fontFamily: "Outfit_700Bold" },
+    profileMember: { fontSize: 12, fontFamily: "Geist_400Regular", marginTop: 2 },
+    sectionLabel: { fontSize: 12, fontFamily: "Outfit_700Bold", letterSpacing: 1, marginBottom: 8, marginTop: 10 },
     row: {
         flexDirection: "row", justifyContent: "space-between", alignItems: "center",
-        backgroundColor: "#160626", borderRadius: 14, padding: 16, marginBottom: 10,
+        borderRadius: 14, padding: 16, marginBottom: 10,
     },
-    rowText: { color: "#FFFFFF", fontSize: 14 },
-    changeText: { color: "#7F56D9", fontSize: 14, fontWeight: "700" },
-    card: { backgroundColor: "#160626", borderRadius: 14, padding: 16, marginBottom: 10 },
+    rowText: { fontSize: 14, fontFamily: "Geist_400Regular" },
+    changeText: { fontSize: 14, fontFamily: "Outfit_700Bold" },
+    card: { borderRadius: 14, padding: 16, marginBottom: 10 },
     passwordRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 14 },
     changePasswordButton: {
-        backgroundColor: "#2A1F3D", height: 44, borderRadius: 12, justifyContent: "center", alignItems: "center",
+        height: 44, borderRadius: 12, justifyContent: "center", alignItems: "center",
     },
-    changePasswordText: { color: "#FFFFFF", fontSize: 14, fontWeight: "700" },
+    changePasswordText: { fontSize: 14, fontFamily: "Outfit_700Bold" },
     dangerZone: {
         backgroundColor: "rgba(255,77,77,0.08)", borderWidth: 1, borderColor: "rgba(255,77,77,0.3)",
         borderRadius: 16, padding: 16, marginTop: 20,
     },
-    dangerTitle: { color: "#FF4D4D", fontSize: 15, fontWeight: "700", marginBottom: 8 },
-    dangerText: { color: "#C4A9A9", fontSize: 13, lineHeight: 19, marginBottom: 16 },
+    dangerTitle: { color: "#FF4D4D", fontSize: 15, fontFamily: "Outfit_700Bold", marginBottom: 8 },
+    dangerText: { color: "#C4A9A9", fontSize: 13, fontFamily: "Geist_400Regular", lineHeight: 19, marginBottom: 16 },
     deleteButton: {
         borderWidth: 1, borderColor: "#FF4D4D", height: 46, borderRadius: 12,
         justifyContent: "center", alignItems: "center",
     },
-    deleteButtonText: { color: "#FF4D4D", fontSize: 14, fontWeight: "700" },
+    deleteButtonText: { color: "#FF4D4D", fontSize: 14, fontFamily: "Outfit_700Bold" },
     modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.7)", justifyContent: "center", alignItems: "center" },
-    modalBox: { width: "88%", backgroundColor: "#160626", borderRadius: 20, padding: 22 },
-    alertBox: { width: "82%", backgroundColor: "#160626", borderRadius: 20, padding: 22 },
-    alertMessage: { color: "#B5AFC7", fontSize: 14, lineHeight: 20, marginBottom: 18 },
-    modalTitle: { color: "#FFFFFF", fontSize: 17, fontWeight: "700", marginBottom: 14 },
+    modalBox: { width: "88%", borderRadius: 20, padding: 22 },
+    alertBox: { width: "82%", borderRadius: 20, padding: 22 },
+    alertMessage: { fontSize: 14, fontFamily: "Geist_400Regular", lineHeight: 20, marginBottom: 18 },
+    modalTitle: { fontSize: 17, fontFamily: "Outfit_700Bold", marginBottom: 14 },
     input: {
-        backgroundColor: "#0A0415", borderWidth: 1, borderColor: "#412A6F", borderRadius: 12,
-        height: 46, paddingHorizontal: 14, color: "#FFFFFF", fontSize: 14, marginBottom: 12,
+        borderWidth: 1, borderRadius: 12,
+        height: 46, paddingHorizontal: 14, fontSize: 14, fontFamily: "Geist_400Regular", marginBottom: 12,
     },
     passwordInputWrapper: {
         flexDirection: "row", alignItems: "center",
-        backgroundColor: "#0A0415", borderWidth: 1, borderColor: "#412A6F", borderRadius: 12,
+        borderWidth: 1, borderRadius: 12,
         height: 46, paddingHorizontal: 14, marginBottom: 12,
     },
-    passwordInput: { flex: 1, color: "#FFFFFF", fontSize: 14 },
+    passwordInput: { flex: 1, fontSize: 14, fontFamily: "Geist_400Regular" },
     modalSaveButton: {
-        backgroundColor: "#7F56D9", height: 48, borderRadius: 12,
+        height: 48, borderRadius: 12,
         justifyContent: "center", alignItems: "center", marginTop: 4, marginBottom: 12,
     },
     deleteConfirmButton: {
         backgroundColor: "#FF4D4D", height: 48, borderRadius: 12,
         justifyContent: "center", alignItems: "center", marginTop: 4, marginBottom: 12,
     },
-    modalSaveText: { color: "#FFFFFF", fontSize: 14, fontWeight: "700" },
-    modalCancelText: { color: "#8B859B", fontSize: 14, fontWeight: "600", textAlign: "center" },
+    modalSaveText: { color: "#FFFFFF", fontSize: 14, fontFamily: "Outfit_700Bold" },
+    modalCancelText: { fontSize: 14, fontFamily: "Outfit_700Bold", textAlign: "center" },
 });

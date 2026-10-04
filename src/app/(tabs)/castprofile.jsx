@@ -6,9 +6,13 @@ import {
     StyleSheet, Text, TouchableOpacity, View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme } from "../../context/ThemeContext";
 import { getImageUrl, getPersonDetails } from "../services/tmbd";
 
 export default function CastProfile() {
+    const { colors, theme } = useTheme();
+    const isDark = theme === "dark";
+
     const { id, character } = useLocalSearchParams();
     const [person, setPerson] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -21,6 +25,8 @@ export default function CastProfile() {
         };
         fetchPerson();
     }, [id]);
+
+    const styles = getStyles(colors, isDark);
 
     if (loading || !person) {
         return (
@@ -44,7 +50,7 @@ export default function CastProfile() {
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()}>
-                    <Ionicons name="arrow-back" size={22} color="#FFFFFF" />
+                    <Ionicons name="arrow-back" size={22} color={colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A")} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Cast Profile</Text>
                 <View style={{ width: 22 }} />
@@ -109,9 +115,9 @@ export default function CastProfile() {
                                 style={styles.filmographyRow}
                                 onPress={() => router.push({ pathname: "/moviedetail", params: { id: item.id } })}
                             >
-                                <View>
-                                    <Text style={styles.filmographyTitle}>{item.title || item.name}</Text>
-                                    <Text style={styles.filmographyRole}>{item.character}</Text>
+                                <View style={{ flex: 1, marginRight: 10 }}>
+                                    <Text style={styles.filmographyTitle} numberOfLines={1}>{item.title || item.name}</Text>
+                                    <Text style={styles.filmographyRole} numberOfLines={1}>{item.character}</Text>
                                 </View>
                                 <Text style={styles.filmographyYear}>
                                     {(item.release_date || item.first_air_date || "").slice(0, 4)}
@@ -127,49 +133,111 @@ export default function CastProfile() {
     );
 }
 
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#090315" },
-    header: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-    },
-    headerTitle: { color: "#FFFFFF", fontSize: 15, fontWeight: "700", flex: 1, textAlign: "center" },
-    profileSection: {
-        alignItems: "center",
-        marginTop: 10,
-        marginBottom: 20,
-    },
-    profileImage: {
-        width: 110,
-        height: 110,
-        borderRadius: 55,
-        borderWidth: 2,
-        borderColor: "#7F56D9",
-        marginBottom: 14,
-    },
-    name: { color: "#FFFFFF", fontSize: 20, fontWeight: "700" },
-    character: { color: "#7F56D9", fontSize: 14, marginTop: 4 },
-    section: { paddingHorizontal: 20, marginTop: 20 },
-    sectionTitle: { color: "#FFFFFF", fontSize: 17, fontWeight: "700", marginBottom: 12 },
-    bioText: { color: "#B5AFC7", fontSize: 14, lineHeight: 22 },
-    knownForCard: { width: 110, marginRight: 14 },
-    knownForImage: { width: 110, height: 155, borderRadius: 12, marginBottom: 6 },
-    knownForTitle: { color: "#FFFFFF", fontSize: 13, fontWeight: "600" },
-    knownForYear: { color: "#8B859B", fontSize: 11, marginTop: 2 },
-    filmographyRow: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        backgroundColor: "#160626",
-        borderRadius: 12,
-        paddingVertical: 14,
-        paddingHorizontal: 16,
-        marginBottom: 10,
-    },
-    filmographyTitle: { color: "#FFFFFF", fontSize: 14, fontWeight: "600" },
-    filmographyRole: { color: "#8B859B", fontSize: 12, marginTop: 2 },
-    filmographyYear: { color: "#7F56D9", fontSize: 14, fontWeight: "700" },
-});
+const getStyles = (colors, isDark) =>
+    StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: colors.background || (isDark ? "#090315" : "#FFFFFF"),
+        },
+        header: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            paddingHorizontal: 20,
+            paddingVertical: 16,
+        },
+        headerTitle: {
+            color: colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A"),
+            fontSize: 15,
+            fontFamily: "Outfit_700Bold",
+            flex: 1,
+            textAlign: "center",
+        },
+        profileSection: {
+            alignItems: "center",
+            marginTop: 10,
+            marginBottom: 20,
+        },
+        profileImage: {
+            width: 110,
+            height: 110,
+            borderRadius: 55,
+            borderWidth: 2,
+            borderColor: "#7F56D9",
+            marginBottom: 14,
+        },
+        name: {
+            color: colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A"),
+            fontSize: 20,
+            fontFamily: "Outfit_700Bold",
+        },
+        character: {
+            color: "#7F56D9",
+            fontSize: 14,
+            fontFamily: "Geist_400Regular",
+            marginTop: 4,
+        },
+        section: {
+            paddingHorizontal: 20,
+            marginTop: 20,
+        },
+        sectionTitle: {
+            color: colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A"),
+            fontSize: 17,
+            fontFamily: "Outfit_700Bold",
+            marginBottom: 12,
+        },
+        bioText: {
+            color: colors.textSecondary || "#B5AFC7",
+            fontSize: 14,
+            lineHeight: 22,
+            fontFamily: "Geist_400Regular",
+        },
+        knownForCard: {
+            width: 110,
+            marginRight: 14,
+        },
+        knownForImage: {
+            width: 110,
+            height: 155,
+            borderRadius: 12,
+            marginBottom: 6,
+        },
+        knownForTitle: {
+            color: colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A"),
+            fontSize: 13,
+            fontFamily: "Outfit_700Bold",
+        },
+        knownForYear: {
+            color: colors.textSecondary || "#8B859B",
+            fontSize: 11,
+            fontFamily: "Geist_400Regular",
+            marginTop: 2,
+        },
+        filmographyRow: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            backgroundColor: colors.surface || (isDark ? "#160626" : "#F4F2F8"),
+            borderRadius: 12,
+            paddingVertical: 14,
+            paddingHorizontal: 16,
+            marginBottom: 10,
+        },
+        filmographyTitle: {
+            color: colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A"),
+            fontSize: 14,
+            fontFamily: "Outfit_700Bold",
+        },
+        filmographyRole: {
+            color: colors.textSecondary || "#8B859B",
+            fontSize: 12,
+            fontFamily: "Geist_400Regular",
+            marginTop: 2,
+        },
+        filmographyYear: {
+            color: "#7F56D9",
+            fontSize: 14,
+            fontFamily: "Outfit_700Bold",
+        },
+    });

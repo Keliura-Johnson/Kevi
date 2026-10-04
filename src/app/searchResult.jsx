@@ -8,8 +8,12 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { discoverMovies, getImageUrl, searchMovies } from "../app/services/tmbd";
+import { useTheme } from "../context/ThemeContext";
 
 export default function SearchResults() {
+    const { colors, theme } = useTheme();
+    const isDark = theme === "dark";
+
     const params = useLocalSearchParams();
     const [searchText, setSearchText] = useState(params.query || "");
     const [results, setResults] = useState([]);
@@ -85,6 +89,8 @@ export default function SearchResults() {
         });
     };
 
+    const styles = getStyles(colors, isDark);
+
     const renderCard = (item, isGrid) => {
         const title = item.title || item.name;
         const year = (item.release_date || item.first_air_date || "").slice(0, 4);
@@ -120,15 +126,14 @@ export default function SearchResults() {
 
     return (
         <SafeAreaView style={styles.container}>
-
             <View style={styles.searchBar}>
                 <TouchableOpacity onPress={() => router.back()}>
-                    <Ionicons name="arrow-back" size={22} color="#FFFFFF" />
+                    <Ionicons name="arrow-back" size={22} color={colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A")} />
                 </TouchableOpacity>
                 <TextInput
                     style={styles.searchInput}
                     placeholder="Search movies, directors, actors..."
-                    placeholderTextColor="#8B859B"
+                    placeholderTextColor={colors.textSecondary || "#8B859B"}
                     value={searchText}
                     onChangeText={setSearchText}
                     onSubmitEditing={handleNewSearch}
@@ -136,7 +141,7 @@ export default function SearchResults() {
                 />
                 {searchText.length > 0 && (
                     <TouchableOpacity onPress={() => setSearchText("")}>
-                        <Ionicons name="close-circle" size={18} color="#8B859B" />
+                        <Ionicons name="close-circle" size={18} color={colors.textSecondary || "#8B859B"} />
                     </TouchableOpacity>
                 )}
             </View>
@@ -157,10 +162,10 @@ export default function SearchResults() {
                 </Text>
                 <View style={{ flexDirection: "row", gap: 12 }}>
                     <TouchableOpacity onPress={() => setViewMode("grid")}>
-                        <Ionicons name="grid-outline" size={20} color={viewMode === "grid" ? "#7F56D9" : "#8B859B"} />
+                        <Ionicons name="grid-outline" size={20} color={viewMode === "grid" ? "#7F56D9" : colors.textSecondary || "#8B859B"} />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => setViewMode("list")}>
-                        <Ionicons name="list-outline" size={20} color={viewMode === "list" ? "#7F56D9" : "#8B859B"} />
+                        <Ionicons name="list-outline" size={20} color={viewMode === "list" ? "#7F56D9" : colors.textSecondary || "#8B859B"} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -190,35 +195,126 @@ export default function SearchResults() {
     );
 }
 
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#090315" },
-    searchBar: {
-        flexDirection: "row", alignItems: "center", backgroundColor: "#160626",
-        marginHorizontal: 20, marginTop: 10, paddingHorizontal: 14, height: 48,
-        borderRadius: 14, borderWidth: 1, borderColor: "#412A6F", gap: 10,
-    },
-    searchInput: { flex: 1, color: "#FFFFFF", fontSize: 15 },
-    filterRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, paddingHorizontal: 20, marginTop: 14 },
-    filterChip: { backgroundColor: "#7F56D9", paddingHorizontal: 14, paddingVertical: 6, borderRadius: 16 },
-    filterChipText: { color: "#FFFFFF", fontSize: 12, fontWeight: "600" },
-    resultsHeader: {
-        flexDirection: "row", justifyContent: "space-between", alignItems: "center",
-        paddingHorizontal: 20, marginTop: 18, marginBottom: 14,
-    },
-    resultsCount: { color: "#8B859B", fontSize: 13 },
-    gridCard: { width: "48%", marginBottom: 20 },
-    gridImage: { width: "100%", height: 220, borderRadius: 12, marginBottom: 8 },
-    gridTitle: { color: "#FFFFFF", fontSize: 14, fontWeight: "700" },
-    metaRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 4 },
-    gridYear: { color: "#8B859B", fontSize: 12 },
-    ratingRow: { flexDirection: "row", alignItems: "center", gap: 4 },
-    ratingText: { color: "#FFFFFF", fontSize: 12, fontWeight: "600" },
-    listCard: { flexDirection: "row", marginBottom: 16 },
-    listImage: { width: 90, height: 130, borderRadius: 10 },
-    typeBadge: {
-        position: "absolute", top: 8, left: 8, backgroundColor: "#7F56D9",
-        paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6,
-    },
-    typeBadgeText: { color: "#FFFFFF", fontSize: 10, fontWeight: "700" },
-    emptyText: { color: "#8B859B", fontSize: 14, textAlign: "center", marginTop: 40 },
-});
+const getStyles = (colors, isDark) =>
+    StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: colors.background || (isDark ? "#090315" : "#FFFFFF"),
+        },
+        searchBar: {
+            flexDirection: "row",
+            alignItems: "center",
+            backgroundColor: colors.surface || (isDark ? "#160626" : "#F4F2F8"),
+            marginHorizontal: 20,
+            marginTop: 10,
+            paddingHorizontal: 14,
+            height: 48,
+            borderRadius: 14,
+            borderWidth: 1,
+            borderColor: colors.border || (isDark ? "#412A6F" : "#E2DCEB"),
+            gap: 10,
+        },
+        searchInput: {
+            flex: 1,
+            color: colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A"),
+            fontSize: 15,
+            fontFamily: "Geist_400Regular",
+        },
+        filterRow: {
+            flexDirection: "row",
+            flexWrap: "wrap",
+            gap: 8,
+            paddingHorizontal: 20,
+            marginTop: 14,
+        },
+        filterChip: {
+            backgroundColor: "#7F56D9",
+            paddingHorizontal: 14,
+            paddingVertical: 6,
+            borderRadius: 16,
+        },
+        filterChipText: {
+            color: "#FFFFFF",
+            fontSize: 12,
+            fontFamily: "Outfit_700Bold",
+        },
+        resultsHeader: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            paddingHorizontal: 20,
+            marginTop: 18,
+            marginBottom: 14,
+        },
+        resultsCount: {
+            color: colors.textSecondary || "#8B859B",
+            fontSize: 13,
+            fontFamily: "Geist_400Regular",
+        },
+        gridCard: {
+            width: "48%",
+            marginBottom: 20,
+        },
+        gridImage: {
+            width: "100%",
+            height: 220,
+            borderRadius: 12,
+            marginBottom: 8,
+        },
+        gridTitle: {
+            color: colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A"),
+            fontSize: 14,
+            fontFamily: "Outfit_700Bold",
+        },
+        metaRow: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: 4,
+        },
+        gridYear: {
+            color: colors.textSecondary || "#8B859B",
+            fontSize: 12,
+            fontFamily: "Geist_400Regular",
+        },
+        ratingRow: {
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 4,
+        },
+        ratingText: {
+            color: colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A"),
+            fontSize: 12,
+            fontFamily: "Outfit_700Bold",
+        },
+        listCard: {
+            flexDirection: "row",
+            marginBottom: 16,
+        },
+        listImage: {
+            width: 90,
+            height: 130,
+            borderRadius: 10,
+        },
+        typeBadge: {
+            position: "absolute",
+            top: 8,
+            left: 8,
+            backgroundColor: "#7F56D9",
+            paddingHorizontal: 8,
+            paddingVertical: 3,
+            borderRadius: 6,
+        },
+        typeBadgeText: {
+            color: "#FFFFFF",
+            fontSize: 10,
+            fontFamily: "Outfit_700Bold",
+        },
+        emptyText: {
+            color: colors.textSecondary || "#8B859B",
+            fontSize: 14,
+            textAlign: "center",
+            marginTop: 40,
+            fontFamily: "Geist_400Regular",
+        },
+    });

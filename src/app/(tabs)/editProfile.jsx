@@ -1,14 +1,15 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as FileSystem from "expo-file-system/legacy";
 import * as ImagePicker from "expo-image-picker";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
-    ActivityIndicator, Alert, Image, Modal,
+    ActivityIndicator, Alert, BackHandler, Image, Modal,
     ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme } from "../../context/ThemeContext";
 import { auth, db } from "../../firebaseConfig";
 
 const GENRES = [
@@ -34,6 +35,9 @@ const GENRES = [
 ];
 
 export default function EditProfile() {
+    const { colors, theme } = useTheme();
+    const isDark = theme === "dark";
+
     const [fullname, setFullname] = useState("");
     const [email, setEmail] = useState("");
     const [profilePic, setProfilePic] = useState("");
@@ -43,6 +47,24 @@ export default function EditProfile() {
     const [showViewModal, setShowViewModal] = useState(false);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+
+    // Direct navigation to the Profile tab
+    const handleGoBack = useCallback(() => {
+        router.navigate("/(tabs)/profile");
+    }, []);
+
+    // Intercept Hardware Back Button on Android
+    useFocusEffect(
+        useCallback(() => {
+            const onBackPress = () => {
+                handleGoBack();
+                return true;
+            };
+
+            const subscription = BackHandler.addEventListener("hardwareBackPress", onBackPress);
+            return () => subscription.remove();
+        }, [handleGoBack])
+    );
 
     useEffect(() => {
         fetchProfile();
@@ -91,7 +113,9 @@ export default function EditProfile() {
                 favoriteGenres: selectedGenre ? [selectedGenre.id] : [],
             });
 
-            Alert.alert("Saved", "Your profile has been updated.");
+            Alert.alert("Saved", "Your profile has been updated.", [
+                { text: "OK", onPress: () => handleGoBack() }
+            ]);
         } catch (error) {
             console.log("SAVE PROFILE ERROR:", error);
             Alert.alert("Error", "Could not save your changes.");
@@ -168,6 +192,8 @@ export default function EditProfile() {
         }
     };
 
+    const styles = getStyles(colors, isDark);
+
     if (loading) {
         return (
             <SafeAreaView style={styles.container}>
@@ -179,8 +205,8 @@ export default function EditProfile() {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.push('/profile')}>
-                    <Ionicons name="arrow-back" size={22} color="#FFFFFF" />
+                <TouchableOpacity onPress={handleGoBack} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                    <Ionicons name="arrow-back" size={22} color={colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A")} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Edit Profile</Text>
                 <View style={{ width: 22 }} />
@@ -206,7 +232,7 @@ export default function EditProfile() {
                         style={styles.input}
                         value={fullname}
                         onChangeText={setFullname}
-                        placeholderTextColor="#6E667D"
+                        placeholderTextColor={colors.textSecondary || "#6E667D"}
                     />
                 </View>
 
@@ -218,7 +244,7 @@ export default function EditProfile() {
                         onChangeText={setEmail}
                         autoCapitalize="none"
                         keyboardType="email-address"
-                        placeholderTextColor="#6E667D"
+                        placeholderTextColor={colors.textSecondary || "#6E667D"}
                     />
                 </View>
 
@@ -228,7 +254,7 @@ export default function EditProfile() {
                         <Text style={styles.dropdownFieldText}>
                             {selectedGenre ? selectedGenre.name : "Select a genre"}
                         </Text>
-                        <Ionicons name="chevron-down" size={18} color="#8B859B" />
+                        <Ionicons name="chevron-down" size={18} color={colors.textSecondary || "#8B859B"} />
                     </TouchableOpacity>
 
                     {showGenrePicker && (
@@ -278,12 +304,12 @@ export default function EditProfile() {
                                 setShowViewModal(true);
                             }}
                         >
-                            <Ionicons name="eye-outline" size={18} color="#FFFFFF" />
+                            <Ionicons name="eye-outline" size={18} color={colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A")} />
                             <Text style={styles.modalOptionText}>View Profile Picture</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity style={styles.modalOption} onPress={handleChoosePicture}>
-                            <Ionicons name="image-outline" size={18} color="#FFFFFF" />
+                            <Ionicons name="image-outline" size={18} color={colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A")} />
                             <Text style={styles.modalOptionText}>Change Picture</Text>
                         </TouchableOpacity>
 
@@ -320,115 +346,178 @@ export default function EditProfile() {
     );
 }
 
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#090315" },
-    header: {
-        flexDirection: "row", justifyContent: "space-between", alignItems: "center",
-        paddingHorizontal: 20, paddingVertical: 16,
-    },
-    headerTitle: { color: "#FFFFFF", fontSize: 18, fontWeight: "700" },
-    photoSection: { alignItems: "center", marginTop: 10, marginBottom: 20 },
-    avatarWrapper: {
-        width: 100,
-        height: 100,
-        position: "relative",
-        marginBottom: 10,
-    },
-    profileImage: { width: 100, height: 100, borderRadius: 50 },
-    cameraButton: {
-        position: "absolute",
-        bottom: 0,
-        right: 0,
-        backgroundColor: "#7F56D9",
-        width: 32,
-        height: 32,
-        borderRadius: 16,
-        justifyContent: "center",
-        alignItems: "center",
-        borderWidth: 2,
-        borderColor: "#090315",
-    },
-    field: { paddingHorizontal: 20, marginBottom: 18 },
-    label: { color: "#8B859B", fontSize: 13, marginBottom: 8 },
-    input: {
-        backgroundColor: "#160626", borderWidth: 1, borderColor: "#412A6F",
-        borderRadius: 12, height: 48, paddingHorizontal: 14, color: "#FFFFFF", fontSize: 14,
-    },
-    dropdownField: {
-        backgroundColor: "#160626", borderWidth: 1, borderColor: "#412A6F",
-        borderRadius: 12, height: 48, paddingHorizontal: 14,
-        flexDirection: "row", justifyContent: "space-between", alignItems: "center",
-    },
-    dropdownFieldText: { color: "#FFFFFF", fontSize: 14 },
-    dropdownList: {
-        backgroundColor: "#160626", borderWidth: 1, borderColor: "#412A6F",
-        borderRadius: 12, marginTop: 8, overflow: "hidden",
-    },
-    dropdownItem: { paddingVertical: 12, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: "#2A1F3D" },
-    dropdownItemText: { color: "#FFFFFF", fontSize: 14 },
-    saveButton: {
-        marginHorizontal: 20, marginTop: 10, height: 50, borderRadius: 14,
-        backgroundColor: "#7F56D9", justifyContent: "center", alignItems: "center",
-    },
-    saveButtonText: { color: "#FFFFFF", fontSize: 15, fontWeight: "700" },
-    modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.7)", justifyContent: "center", alignItems: "center" },
-    modalBox: { width: "85%", backgroundColor: "#160626", borderRadius: 20, padding: 20 },
-    modalTitle: { color: "#FFFFFF", fontSize: 17, fontWeight: "700", marginBottom: 14 },
-    modalOption: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 12 },
-    modalOptionText: { color: "#FFFFFF", fontSize: 14, fontWeight: "600" },
-    modalCancel: { alignItems: "center", paddingVertical: 12, marginTop: 4 },
-    modalCancelText: { color: "#8B859B", fontSize: 14, fontWeight: "600" },
-    viewOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.95)", justifyContent: "center", alignItems: "center" },
-    viewClose: { position: "absolute", top: 50, right: 20, zIndex: 10 },
-    fullImage: { width: "90%", height: "70%" },
-});
-
-// const styles = StyleSheet.create({
-//     container: { flex: 1, backgroundColor: "#090315" },
-//     header: {
-//         flexDirection: "row", justifyContent: "space-between", alignItems: "center",
-//         paddingHorizontal: 20, paddingVertical: 16,
-//     },
-//     headerTitle: { color: "#FFFFFF", fontSize: 18, fontWeight: "700" },
-//     photoSection: { alignItems: "center", marginTop: 10, marginBottom: 20 },
-//     profileImage: { width: 100, height: 100, borderRadius: 50, marginBottom: 10 },
-//     cameraButton: {
-//         position: "absolute", top: 70, left: "55%", marginLeft: 10,
-//         backgroundColor: "#7F56D9", width: 32, height: 32, borderRadius: 16,
-//         justifyContent: "center", alignItems: "center", borderWidth: 2, borderColor: "#090315",
-//     },
-//     changePhotoText: { color: "#7F56D9", fontSize: 13, fontWeight: "600", marginTop: 4 },
-//     field: { paddingHorizontal: 20, marginBottom: 18 },
-//     label: { color: "#8B859B", fontSize: 13, marginBottom: 8 },
-//     input: {
-//         backgroundColor: "#160626", borderWidth: 1, borderColor: "#412A6F",
-//         borderRadius: 12, height: 48, paddingHorizontal: 14, color: "#FFFFFF", fontSize: 14,
-//     },
-//     dropdownField: {
-//         backgroundColor: "#160626", borderWidth: 1, borderColor: "#412A6F",
-//         borderRadius: 12, height: 48, paddingHorizontal: 14,
-//         flexDirection: "row", justifyContent: "space-between", alignItems: "center",
-//     },
-//     dropdownFieldText: { color: "#FFFFFF", fontSize: 14 },
-//     dropdownList: {
-//         backgroundColor: "#160626", borderWidth: 1, borderColor: "#412A6F",
-//         borderRadius: 12, marginTop: 8, overflow: "hidden",
-//     },
-//     dropdownItem: { paddingVertical: 12, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: "#2A1F3D" },
-//     dropdownItemText: { color: "#FFFFFF", fontSize: 14 },
-//     saveButton: {
-//         marginHorizontal: 20, marginTop: 10, height: 50, borderRadius: 14,
-//         backgroundColor: "#7F56D9", justifyContent: "center", alignItems: "center",
-//     },
-//     saveButtonText: { color: "#FFFFFF", fontSize: 15, fontWeight: "700" },
-//     modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.7)", justifyContent: "center", alignItems: "center" },
-//     modalBox: { width: "85%", backgroundColor: "#160626", borderRadius: 20, padding: 20 },
-//     modalTitle: { color: "#FFFFFF", fontSize: 17, fontWeight: "700", marginBottom: 14 },
-//     modalOption: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 12 },
-//     modalOptionText: { color: "#FFFFFF", fontSize: 14, fontWeight: "600" },
-//     modalCancel: { alignItems: "center", paddingVertical: 12, marginTop: 4 },
-//     modalCancelText: { color: "#8B859B", fontSize: 14, fontWeight: "600" },
-//     viewOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.95)", justifyContent: "center", alignItems: "center" },
-//     viewClose: { position: "absolute", top: 50, right: 20, zIndex: 10 },
-//     fullImage: { width: "90%", height: "70%" },
-// });
+const getStyles = (colors, isDark) =>
+    StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: colors.background || (isDark ? "#090315" : "#FFFFFF"),
+        },
+        header: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            paddingHorizontal: 20,
+            paddingVertical: 16,
+        },
+        headerTitle: {
+            color: colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A"),
+            fontSize: 18,
+            fontFamily: "Outfit_700Bold",
+        },
+        photoSection: {
+            alignItems: "center",
+            marginTop: 10,
+            marginBottom: 20,
+        },
+        avatarWrapper: {
+            width: 100,
+            height: 100,
+            position: "relative",
+            marginBottom: 10,
+        },
+        profileImage: {
+            width: 100,
+            height: 100,
+            borderRadius: 50,
+        },
+        cameraButton: {
+            position: "absolute",
+            bottom: 0,
+            right: 0,
+            backgroundColor: "#7F56D9",
+            width: 32,
+            height: 32,
+            borderRadius: 16,
+            justifyContent: "center",
+            alignItems: "center",
+            borderWidth: 2,
+            borderColor: colors.background || (isDark ? "#090315" : "#FFFFFF"),
+        },
+        field: {
+            paddingHorizontal: 20,
+            marginBottom: 18,
+        },
+        label: {
+            color: colors.textSecondary || "#8B859B",
+            fontSize: 13,
+            marginBottom: 8,
+            fontFamily: "Geist_400Regular",
+        },
+        input: {
+            backgroundColor: colors.surface || (isDark ? "#160626" : "#F4F2F8"),
+            borderWidth: 1,
+            borderColor: colors.border || (isDark ? "#412A6F" : "#E2DCEB"),
+            borderRadius: 12,
+            height: 48,
+            paddingHorizontal: 14,
+            color: colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A"),
+            fontSize: 14,
+            fontFamily: "Geist_400Regular",
+        },
+        dropdownField: {
+            backgroundColor: colors.surface || (isDark ? "#160626" : "#F4F2F8"),
+            borderWidth: 1,
+            borderColor: colors.border || (isDark ? "#412A6F" : "#E2DCEB"),
+            borderRadius: 12,
+            height: 48,
+            paddingHorizontal: 14,
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+        },
+        dropdownFieldText: {
+            color: colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A"),
+            fontSize: 14,
+            fontFamily: "Geist_400Regular",
+        },
+        dropdownList: {
+            backgroundColor: colors.surface || (isDark ? "#160626" : "#F4F2F8"),
+            borderWidth: 1,
+            borderColor: colors.border || (isDark ? "#412A6F" : "#E2DCEB"),
+            borderRadius: 12,
+            marginTop: 8,
+            overflow: "hidden",
+        },
+        dropdownItem: {
+            paddingVertical: 12,
+            paddingHorizontal: 16,
+            borderBottomWidth: 1,
+            borderBottomColor: colors.border || (isDark ? "#2A1F3D" : "#E2DCEB"),
+        },
+        dropdownItemText: {
+            color: colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A"),
+            fontSize: 14,
+            fontFamily: "Geist_400Regular",
+        },
+        saveButton: {
+            marginHorizontal: 20,
+            marginTop: 10,
+            height: 50,
+            borderRadius: 14,
+            backgroundColor: "#7F56D9",
+            justifyContent: "center",
+            alignItems: "center",
+        },
+        saveButtonText: {
+            color: "#FFFFFF",
+            fontSize: 15,
+            fontFamily: "Outfit_700Bold",
+        },
+        modalOverlay: {
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.7)",
+            justifyContent: "center",
+            alignItems: "center",
+        },
+        modalBox: {
+            width: "85%",
+            backgroundColor: colors.surface || (isDark ? "#160626" : "#FFFFFF"),
+            borderRadius: 20,
+            padding: 20,
+            borderWidth: 1,
+            borderColor: colors.border || (isDark ? "#412A6F" : "#E2DCEB"),
+        },
+        modalTitle: {
+            color: colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A"),
+            fontSize: 17,
+            fontFamily: "Outfit_700Bold",
+            marginBottom: 14,
+        },
+        modalOption: {
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 10,
+            paddingVertical: 12,
+        },
+        modalOptionText: {
+            color: colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A"),
+            fontSize: 14,
+            fontFamily: "Outfit_700Bold",
+        },
+        modalCancel: {
+            alignItems: "center",
+            paddingVertical: 12,
+            marginTop: 4,
+        },
+        modalCancelText: {
+            color: colors.textSecondary || "#8B859B",
+            fontSize: 14,
+            fontFamily: "Outfit_700Bold",
+        },
+        viewOverlay: {
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.95)",
+            justifyContent: "center",
+            alignItems: "center",
+        },
+        viewClose: {
+            position: "absolute",
+            top: 50,
+            right: 20,
+            zIndex: 10,
+        },
+        fullImage: {
+            width: "90%",
+            height: "70%",
+        },
+    });

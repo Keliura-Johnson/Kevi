@@ -7,6 +7,7 @@ import {
     StyleSheet, Text, TouchableOpacity, View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme } from "../../context/ThemeContext";
 import { auth, db } from "../../firebaseConfig";
 import { getImageUrl, getMovieDetails } from "../services/tmbd";
 
@@ -18,6 +19,9 @@ const SORT_OPTIONS = [
 ];
 
 export default function Watchlist() {
+    const { colors, theme } = useTheme();
+    const isDark = theme === "dark";
+
     const [movies, setMovies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [sortBy, setSortBy] = useState("recent");
@@ -91,6 +95,8 @@ export default function Watchlist() {
     const sortedMovies = getSortedMovies();
     const currentSortLabel = SORT_OPTIONS.find((o) => o.key === sortBy)?.label;
 
+    const styles = getStyles(colors, isDark);
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
@@ -147,7 +153,7 @@ export default function Watchlist() {
                     )}
                     ListEmptyComponent={
                         <View style={styles.emptyState}>
-                            <Ionicons name="bookmark-outline" size={50} color="#412A6F" />
+                            <Ionicons name="bookmark-outline" size={50} color={colors.border || (isDark ? "#412A6F" : "#E2DCEB")} />
                             <Text style={styles.emptyText}>Your watchlist is empty</Text>
                             <Text style={styles.emptySubtext}>
                                 Movies you add to your watchlist will appear here.
@@ -192,93 +198,145 @@ export default function Watchlist() {
     );
 }
 
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#090315" },
-    header: {
-        paddingHorizontal: 20,
-        paddingTop: 10,
-        paddingBottom: 14,
-    },
-    headerTitle: { color: "#FFFFFF", fontSize: 24, fontWeight: "800" },
-    sortRow: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        paddingHorizontal: 20,
-        paddingBottom: 16,
-    },
-    sortButton: {
-        flexDirection: "row",
-        alignItems: "center",
-        gap: 6,
-    },
-    sortLabel: { color: "#8B859B", fontSize: 13 },
-    sortValue: { color: "#7F56D9", fontWeight: "700" },
-    movieCount: { color: "#8B859B", fontSize: 13 },
-    card: {
-        width: "48%",
-        marginBottom: 20,
-    },
-    cardImage: {
-        width: "100%",
-        height: 220,
-        borderRadius: 14,
-        marginBottom: 8,
-    },
-    bookmarkIcon: {
-        position: "absolute",
-        top: 10,
-        right: 10,
-        backgroundColor: "rgba(127,86,217,0.85)",
-        width: 28,
-        height: 28,
-        borderRadius: 14,
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    cardTitle: { color: "#FFFFFF", fontSize: 14, fontWeight: "700" },
-    metaRow: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        marginTop: 4,
-    },
-    cardYear: { color: "#8B859B", fontSize: 12 },
-    ratingRow: { flexDirection: "row", alignItems: "center", gap: 4 },
-    ratingText: { color: "#FFFFFF", fontSize: 12, fontWeight: "600" },
-    emptyState: {
-        alignItems: "center",
-        marginTop: 80,
-        paddingHorizontal: 40,
-    },
-    emptyText: { color: "#FFFFFF", fontSize: 16, fontWeight: "700", marginTop: 16 },
-    emptySubtext: {
-        color: "#8B859B",
-        fontSize: 13,
-        textAlign: "center",
-        marginTop: 8,
-        lineHeight: 20,
-    },
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: "rgba(0,0,0,0.6)",
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    modalBox: {
-        width: "80%",
-        backgroundColor: "#160626",
-        borderRadius: 18,
-        padding: 20,
-    },
-    modalTitle: { color: "#FFFFFF", fontSize: 16, fontWeight: "700", marginBottom: 14 },
-    sortOption: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: "#24103B",
-    },
-    sortOptionText: { color: "#FFFFFF", fontSize: 14 },
-});
+const getStyles = (colors, isDark) =>
+    StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: colors.background || (isDark ? "#090315" : "#FFFFFF"),
+        },
+        header: {
+            paddingHorizontal: 20,
+            paddingTop: 10,
+            paddingBottom: 14,
+        },
+        headerTitle: {
+            color: colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A"),
+            fontSize: 24,
+            fontFamily: "Outfit_700Bold",
+        },
+        sortRow: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            paddingHorizontal: 20,
+            paddingBottom: 16,
+        },
+        sortButton: {
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 6,
+        },
+        sortLabel: {
+            color: colors.textSecondary || "#8B859B",
+            fontSize: 13,
+            fontFamily: "Geist_400Regular",
+        },
+        sortValue: {
+            color: "#7F56D9",
+            fontFamily: "Outfit_700Bold",
+        },
+        movieCount: {
+            color: colors.textSecondary || "#8B859B",
+            fontSize: 13,
+            fontFamily: "Geist_400Regular",
+        },
+        card: {
+            width: "48%",
+            marginBottom: 20,
+        },
+        cardImage: {
+            width: "100%",
+            height: 220,
+            borderRadius: 14,
+            marginBottom: 8,
+        },
+        bookmarkIcon: {
+            position: "absolute",
+            top: 10,
+            right: 10,
+            backgroundColor: "rgba(127,86,217,0.85)",
+            width: 28,
+            height: 28,
+            borderRadius: 14,
+            justifyContent: "center",
+            alignItems: "center",
+        },
+        cardTitle: {
+            color: colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A"),
+            fontSize: 14,
+            fontFamily: "Outfit_700Bold",
+        },
+        metaRow: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginTop: 4,
+        },
+        cardYear: {
+            color: colors.textSecondary || "#8B859B",
+            fontSize: 12,
+            fontFamily: "Geist_400Regular",
+        },
+        ratingRow: {
+            flexDirection: "row",
+            alignItems: "center",
+            gap: 4,
+        },
+        ratingText: {
+            color: colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A"),
+            fontSize: 12,
+            fontFamily: "Outfit_700Bold",
+        },
+        emptyState: {
+            alignItems: "center",
+            marginTop: 80,
+            paddingHorizontal: 40,
+        },
+        emptyText: {
+            color: colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A"),
+            fontSize: 16,
+            fontFamily: "Outfit_700Bold",
+            marginTop: 16,
+        },
+        emptySubtext: {
+            color: colors.textSecondary || "#8B859B",
+            fontSize: 13,
+            textAlign: "center",
+            marginTop: 8,
+            lineHeight: 20,
+            fontFamily: "Geist_400Regular",
+        },
+        modalOverlay: {
+            flex: 1,
+            backgroundColor: "rgba(0,0,0,0.6)",
+            justifyContent: "center",
+            alignItems: "center",
+        },
+        modalBox: {
+            width: "80%",
+            backgroundColor: colors.surface || (isDark ? "#160626" : "#FFFFFF"),
+            borderRadius: 18,
+            padding: 20,
+            borderWidth: 1,
+            borderColor: colors.border || (isDark ? "#24103B" : "#E2DCEB"),
+        },
+        modalTitle: {
+            color: colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A"),
+            fontSize: 16,
+            fontFamily: "Outfit_700Bold",
+            marginBottom: 14,
+        },
+        sortOption: {
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+            paddingVertical: 12,
+            borderBottomWidth: 1,
+            borderBottomColor: colors.border || (isDark ? "#24103B" : "#E2DCEB"),
+        },
+        sortOptionText: {
+            color: colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A"),
+            fontSize: 14,
+            fontFamily: "Geist_400Regular",
+        },
+    });

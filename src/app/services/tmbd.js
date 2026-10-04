@@ -25,12 +25,49 @@ export const getPersonDetails = async (personId) => {
     return await res.json();
 };
 
-export const getPersonalizedRecommendations = async (genreIds, page = 1) => {
-    const genreString = genreIds.join(',');
+// export const getPersonalizedRecommendations = async (genreIds, page = 1) => {
+//     const genreString = genreIds.join(',');
 
-    const res = await fetch(
-        `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreString}&sort_by=popularity.desc&page=${page}`
-    );
+//     const res = await fetch(
+//         `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreString}&sort_by=popularity.desc&page=${page}`
+//     );
+
+//     const data = await res.json();
+
+//     return data.results || [];
+// };
+
+
+
+export const getPersonalizedRecommendations = async (genreIds, page = 1) => {
+    try {
+       
+        const idsArray = Array.isArray(genreIds) ? genreIds : [genreIds];
+
+        if (!idsArray.length) return [];
+
+        const genreString = idsArray.join('|');
+
+   
+        const sortOptions = [
+            'popularity.desc',
+            'vote_average.desc',
+            'vote_count.desc',
+            'revenue.desc',
+        ];
+        const randomSort = sortOptions[Math.floor(Math.random() * sortOptions.length)];
+
+        const res = await fetch(
+            `${BASE_URL}/discover/movie?api_key=${API_KEY}&with_genres=${genreString}&sort_by=${randomSort}&vote_count.gte=100&page=${page}`
+        );
+
+        const data = await res.json();
+        return data.results || [];
+    } catch (error) {
+        console.log("TMDB Personalization Error:", error);
+        return [];
+    }
+
 
     const data = await res.json();
 
@@ -85,6 +122,26 @@ export const discoverMovies = async ({ genre, year, rating, page = 1 }) => {
     const res = await fetch(url);
     const data = await res.json();
     return { results: data.results || [], total_pages: data.total_pages || 1 };
+};
+
+export const getTVSeasonDetails = async (tvId, seasonNumber) => {
+    const res = await fetch(
+        `${BASE_URL}/tv/${tvId}/season/${seasonNumber}?api_key=${API_KEY}`
+    );
+
+    return await res.json();
+};
+export const searchMulti = async (query) => {
+    try {
+        const response = await fetch(
+            `${BASE_URL}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`
+        );
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.log("TMDB searchMulti error:", error);
+        return { results: [] };
+    }
 };
 
 export const getImageUrl = (path) => `${IMAGE_BASE_URL}${path}`;

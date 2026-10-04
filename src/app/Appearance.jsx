@@ -1,5 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import Slider from '@react-native-community/slider';
 import { router } from "expo-router";
 import { doc, updateDoc } from "firebase/firestore";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -52,7 +51,10 @@ export default function Appearance() {
                 <Text style={[styles.sectionLabel, { color: colors.subtext }]}>THEME</Text>
                 <View style={styles.themeRow}>
                     <TouchableOpacity
-                        style={[styles.themeCard, { backgroundColor: colors.card, borderColor: theme === "dark" ? colors.accent : colors.border }]}
+                        style={[
+                            styles.themeCard, 
+                            { backgroundColor: colors.card, borderColor: theme === "dark" ? colors.accent : colors.border }
+                        ]}
                         onPress={() => handleThemeSelect("dark")}
                     >
                         <View style={styles.themeSwatchDark} />
@@ -60,7 +62,10 @@ export default function Appearance() {
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        style={[styles.themeCard, { backgroundColor: colors.card, borderColor: theme === "light" ? colors.accent : colors.border }]}
+                        style={[
+                            styles.themeCard, 
+                            { backgroundColor: colors.card, borderColor: theme === "light" ? colors.accent : colors.border }
+                        ]}
                         onPress={() => handleThemeSelect("light")}
                     >
                         <View style={styles.themeSwatchLight} />
@@ -68,14 +73,14 @@ export default function Appearance() {
                     </TouchableOpacity>
                 </View>
 
-                <Text style={[styles.sectionLabel, { color: colors.subtext }]}>TEXT SIZE</Text>
+                {/* <Text style={[styles.sectionLabel, { color: colors.subtext }]}>TEXT SIZE</Text>
                 <View style={[styles.sliderCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                     <View style={styles.sliderLabelsRow}>
-                        <Text style={{ color: colors.subtext, fontSize: 13 }}>Small</Text>
-                        <Text style={{ color: colors.accent, fontWeight: "700", fontSize: 13 }}>
+                        <Text style={[styles.sliderSubtext, { color: colors.subtext }]}>Small</Text>
+                        <Text style={[styles.sliderActiveText, { color: colors.accent }]}>
                             {TEXT_SIZES[textSizeIndex]}
                         </Text>
-                        <Text style={{ color: colors.subtext, fontSize: 13 }}>Large</Text>
+                        <Text style={[styles.sliderSubtext, { color: colors.subtext }]}>Large</Text>
                     </View>
                     <Slider
                         style={{ width: "100%", height: 40 }}
@@ -89,7 +94,7 @@ export default function Appearance() {
                         maximumTrackTintColor={colors.border}
                         thumbTintColor={colors.accent}
                     />
-                </View>
+                </View> */}
 
             </View>
         </SafeAreaView>
@@ -99,16 +104,46 @@ export default function Appearance() {
 const styles = StyleSheet.create({
     container: { flex: 1 },
     header: {
-        flexDirection: "row", justifyContent: "space-between", alignItems: "center",
-        paddingHorizontal: 20, paddingVertical: 16,
+        flexDirection: "row", 
+        justifyContent: "space-between", 
+        alignItems: "center",
+        paddingHorizontal: 20, 
+        paddingVertical: 16,
     },
-    headerTitle: { fontSize: 20, fontWeight: "800" },
-    sectionLabel: { fontSize: 12, fontWeight: "700", letterSpacing: 1, marginBottom: 10, marginTop: 20 },
+    headerTitle: { 
+        fontSize: 20, 
+        fontFamily: "Outfit_700Bold",
+    },
+    sectionLabel: { 
+        fontSize: 12, 
+        fontFamily: "Outfit_700Bold", 
+        letterSpacing: 1, 
+        marginBottom: 10, 
+        marginTop: 20 
+    },
     themeRow: { flexDirection: "row", gap: 12 },
-    themeCard: { flex: 1, borderRadius: 14, borderWidth: 1, alignItems: "center", paddingVertical: 16, gap: 10 },
+    themeCard: { 
+        flex: 1, 
+        borderRadius: 14, 
+        borderWidth: 1, 
+        alignItems: "center", 
+        paddingVertical: 16, 
+        gap: 10 
+    },
     themeSwatchDark: { width: 40, height: 30, borderRadius: 6, backgroundColor: "#0A0415" },
     themeSwatchLight: { width: 40, height: 30, borderRadius: 6, backgroundColor: "#F2F2F2" },
-    themeLabel: { fontSize: 13, fontWeight: "600" },
+    themeLabel: { 
+        fontSize: 14, 
+        fontFamily: "Geist_400Regular" 
+    },
     sliderCard: { borderRadius: 14, borderWidth: 1, padding: 16 },
     sliderLabelsRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 4 },
+    sliderSubtext: {
+        fontSize: 13,
+        fontFamily: "Geist_400Regular",
+    },
+    sliderActiveText: {
+        fontSize: 13,
+        fontFamily: "Outfit_700Bold",
+    },
 });

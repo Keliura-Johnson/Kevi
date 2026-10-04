@@ -1,15 +1,20 @@
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { doc, getDoc } from "firebase/firestore";
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import {
+    BackHandler,
     FlatList, Image, ScrollView, StyleSheet,
     Text, TouchableOpacity, View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTheme } from "../../context/ThemeContext";
 import { auth, db } from "../../firebaseConfig";
 import { getImageUrl, getMovieDetails } from "../services/tmbd";
 
 export default function Profile() {
+    const { colors, theme } = useTheme();
+    const isDark = theme === "dark";
+
     const [fullname, setFullname] = useState("");
     const [bio, setBio] = useState("");
     const [profilePic, setProfilePic] = useState("");
@@ -17,10 +22,6 @@ export default function Profile() {
     const [favoritesCount, setFavoritesCount] = useState(0);
     const [watchedCount, setWatchedCount] = useState(0);
     const [favoriteMovies, setFavoriteMovies] = useState([]);
-
-    useEffect(() => {
-        fetchProfile();
-    }, []);
 
     const fetchProfile = async () => {
         const user = auth.currentUser;
@@ -58,6 +59,23 @@ export default function Profile() {
             console.log("PROFILE FETCH ERROR:", error);
         }
     };
+
+    // Refetches data when screen comes into focus & handles Android back button to Home tab
+    useFocusEffect(
+        useCallback(() => {
+            fetchProfile();
+
+            const onBackPress = () => {
+                router.navigate("/(tabs)/home");
+                return true;
+            };
+
+            const subscription = BackHandler.addEventListener("hardwareBackPress", onBackPress);
+            return () => subscription.remove();
+        }, [])
+    );
+
+    const styles = getStyles(colors, isDark);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -124,55 +142,106 @@ export default function Profile() {
     );
 }
 
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#090315" },
-    profileSection: {
-        alignItems: "center",
-        marginTop: 20,
-        paddingHorizontal: 30,
-    },
-    profileImage: {
-        width: 90,
-        height: 90,
-        borderRadius: 45,
-        marginBottom: 14,
-    },
-    name: { color: "#FFFFFF", fontSize: 20, fontWeight: "700" },
-    bio: {
-        color: "#8B859B",
-        fontSize: 13,
-        textAlign: "center",
-        marginTop: 8,
-        lineHeight: 19,
-    },
-    statsRow: {
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#160626",
-        marginHorizontal: 20,
-        marginTop: 24,
-        borderRadius: 16,
-        paddingVertical: 16,
-    },
-    statItem: { flex: 1, alignItems: "center" },
-    statDivider: { width: 1, height: 30, backgroundColor: "#2A1F3D" },
-    statNumber: { color: "#FFFFFF", fontSize: 18, fontWeight: "800" },
-    statLabel: { color: "#8B859B", fontSize: 12, marginTop: 4 },
-    editButton: {
-        marginHorizontal: 20,
-        marginTop: 16,
-        height: 46,
-        borderRadius: 14,
-        borderWidth: 1,
-        borderColor: "#7F56D9",
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    editButtonText: { color: "#7F56D9", fontSize: 14, fontWeight: "700" },
-    section: { marginTop: 28, paddingLeft: 20 },
-    sectionTitle: { color: "#FFFFFF", fontSize: 17, fontWeight: "700", marginBottom: 12 },
-    movieCard: { marginRight: 12 },
-    movieImage: { width: 100, height: 145, borderRadius: 12 },
-    emptyText: { color: "#8B859B", fontSize: 13, marginRight: 20 },
-});
+const getStyles = (colors, isDark) =>
+    StyleSheet.create({
+        container: {
+            flex: 1,
+            backgroundColor: colors.background || (isDark ? "#090315" : "#FFFFFF"),
+        },
+        profileSection: {
+            alignItems: "center",
+            marginTop: 20,
+            paddingHorizontal: 30,
+        },
+        profileImage: {
+            width: 90,
+            height: 90,
+            borderRadius: 45,
+            marginBottom: 14,
+        },
+        name: {
+            color: colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A"),
+            fontSize: 20,
+            fontFamily: "Outfit_700Bold",
+        },
+        bio: {
+            color: colors.textSecondary || "#8B859B",
+            fontSize: 13,
+            textAlign: "center",
+            marginTop: 8,
+            lineHeight: 19,
+            fontFamily: "Geist_400Regular",
+        },
+        statsRow: {
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: colors.surface || (isDark ? "#160626" : "#F4F2F8"),
+            marginHorizontal: 20,
+            marginTop: 24,
+            borderRadius: 16,
+            paddingVertical: 16,
+            borderWidth: 1,
+            borderColor: colors.border || (isDark ? "#24103B" : "#E2DCEB"),
+        },
+        statItem: {
+            flex: 1,
+            alignItems: "center",
+        },
+        statDivider: {
+            width: 1,
+            height: 30,
+            backgroundColor: colors.border || (isDark ? "#2A1F3D" : "#E2DCEB"),
+        },
+        statNumber: {
+            color: colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A"),
+            fontSize: 18,
+            fontFamily: "Outfit_700Bold",
+        },
+        statLabel: {
+            color: colors.textSecondary || "#8B859B",
+            fontSize: 12,
+            marginTop: 4,
+            fontFamily: "Geist_400Regular",
+        },
+        editButton: {
+            marginHorizontal: 20,
+            marginTop: 16,
+            height: 46,
+            borderRadius: 14,
+            borderWidth: 1,
+            borderColor: "#7F56D9",
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: colors.surface || (isDark ? "#160626" : "#F4F2F8"),
+        },
+        editButtonText: {
+            color: "#7F56D9",
+            fontSize: 14,
+            fontFamily: "Outfit_700Bold",
+        },
+        section: {
+            marginTop: 28,
+            paddingLeft: 20,
+        },
+        sectionTitle: {
+            color: colors.textPrimary || (isDark ? "#FFFFFF" : "#1A102A"),
+            fontSize: 17,
+            fontFamily: "Outfit_700Bold",
+            marginBottom: 12,
+        },
+        movieCard: {
+            marginRight: 12,
+        },
+        movieImage: {
+            width: 100,
+            height: 145,
+            borderRadius: 12,
+        },
+        emptyText: {
+            color: colors.textSecondary || "#8B859B",
+            fontSize: 13,
+            marginRight: 20,
+            fontFamily: "Geist_400Regular",
+        },
+    });

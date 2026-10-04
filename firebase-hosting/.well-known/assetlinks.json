@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.keliura.kevi",
+      "sha256_cert_fingerprints": [
+        "C8:E8:8E:A0:23:8D:D5:17:28:B6:D4:9B:E3:02:F9:14:2F:EC:A5:21:EC:49:66:27:97:65:DA:AB:36:FF:0D:F8"
+      ]
+    }
+  }
+]

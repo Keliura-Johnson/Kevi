@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "736111976625",
+    "project_id": "kevi-7c236",
+    "storage_bucket": "kevi-7c236.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:736111976625:android:450c7b19b9b8c4fc880290",
+        "android_client_info": {
+          "package_name": "com.keliura.kevi"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "736111976625-se8tmngf2li6o7ub9pgfk49dv84t4f1n.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.keliura.kevi",
+            "certificate_hash": "b5df2c5095bd5e1f6caa80eeed2dfda45226ed86"
+          }
+        },
+        {
+          "client_id": "736111976625-ov2csso04pu3roqo8gf4efrdf6nkkq9q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQ5Jon83r4jbYOJzSsCr0CTVHqkYJro_A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "736111976625-ov2csso04pu3roqo8gf4efrdf6nkkq9q.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

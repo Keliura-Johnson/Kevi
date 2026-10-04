@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kevi</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #0A0415;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+
+    .container {
+      padding: 30px;
+    }
+
+    h1 {
+      color: #7F56D9;
+    }
+
+    p {
+      color: #B8B0C5;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Kevi</h1>
+    <p>Opening Kevi...</p>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+
+    const mode = params.get("mode");
+    const oobCode = params.get("oobCode");
+    const apiKey = params.get("apiKey");
+
+    if (mode && oobCode) {
+      const appUrl =
+        "kevi://verify" +
+        "?mode=" + encodeURIComponent(mode) +
+        "&oobCode=" + encodeURIComponent(oobCode) +
+        "&apiKey=" + encodeURIComponent(apiKey || "");
+
+      window.location.href = appUrl;
+    }
+  </script>
+</body>
+</html>
